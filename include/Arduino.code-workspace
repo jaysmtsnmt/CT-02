@@ -1,0 +1,42 @@
+{
+	"folders": [
+		{
+			"name": "Arduino",
+			"path": ".."
+		},
+		{
+			"name": "Wen Birthday Present",
+			"path": "../../Wen Birthday Present"
+		},
+		{
+			"name": "English GA Mariokart",
+			"path": "../../English GA Mariokart"
+		},
+		{
+			"name": "WENRGB",
+			"path": "../../WENRGB"
+		},
+		{
+			"name": "Physics Project - Self Balancing Reaction Wheel",
+			"path": "../../Physics Project - Self Balancing Reaction Wheel"
+		},
+		{
+			"name": "Biology GA",
+			"path": "../../Biology GA"
+		}
+	],
+	"settings": {
+		"files.associations": {
+			"vector": "cpp",
+			"initializer_list": "cpp",
+			"valarray": "cpp",
+			"bitset": "cpp",
+			"deque": "cpp",
+			"sstream": "cpp",
+			"string": "cpp",
+			"iostream": "cpp",
+			"functional": "cpp",
+			"memory": "cpp"
+		}
+	}
+}
