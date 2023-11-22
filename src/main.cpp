@@ -2,9 +2,10 @@
 #include <Arduino.h>
 
 //Hardware Includes
-#include "01 eyes.cpp" 
-#include "02 heart.cpp"
-#include "05 servo.cpp"
+#include "01 Eyes.cpp" 
+#include "02 Heart.cpp"
+#include "03 Neck.cpp"
+#include "04 DataHandler.cpp"
 
 //Internal Variables/Definitions
 int idletosleep = 10; //Number of idle loops till sleep

@@ -46,3 +46,11 @@ You MUST declare log1 = loopnumber;
 [STATES]
 idle(<bool whether should fall asleep (default true)>, <int number of idle loops till sleep (default value is found in main.cpp)>);
 sleep(<bool whether should wake after predetermined loops (default false)>, <int number of sleep loops till idle (default value found in main.cpp)>);
+
+[FETCHING]
+If there is no new data, fetchreturn() returns false. 
+If there is new data, fetchreturn() returns true, in which tokenisation can be run. 
+
+while (fetchreturn(data)){
+    tokenise(data, dataarray);
+}

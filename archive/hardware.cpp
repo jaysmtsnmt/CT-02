@@ -1,5 +1,5 @@
 #include <Arduino.h>
-#include <06 datasplitter.cpp>
+#include "06 datasplitter.cpp"
 #include <Servo.h>
 #include <SevSeg.h>
 
@@ -15,16 +15,16 @@ char lsensorcmdtag[] = "11";
 
 //-----------------PINS-----------------
 //Servo
-int servopin = 12;
+int servopin = 3;
 
 //Eyes
-const byte le = 8; //10
-const byte re = 7; //11
-const byte ler = 10;
-const byte rer = 9;
+const byte le = 11; //10
+const byte re = 10; //11
+const byte ler = 5;
+const byte rer = 6;
 
 //Heart
-int heartpin = 3;
+int heartpin = 9;
 
 //Lightsensor
 const byte lightsensorpin = A0;

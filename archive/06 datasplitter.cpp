@@ -6,8 +6,8 @@
 #include <string.h>
 
 const char* seperator = "/";
-//char data[] = "11/swrite/test3523454";
-//char* array[20];
+char data[] = "11/swrite/test3523454";
+char* array[20];
 
 void tokenise(char data[], char *array[20]){
     char* token = strtok(data, seperator);
