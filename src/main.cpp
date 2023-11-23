@@ -83,7 +83,7 @@ void sleep(bool wake = false, int wakeafter = sleeptoidle){
     }
      */   
     
-    int wakechance = random(0, 50); //0,50
+    int wakechance = random(0, 5000); //0,50
     if (wakechance == 5){
         state = "idle";
         changestate = loopnumber;
