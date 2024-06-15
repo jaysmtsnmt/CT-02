@@ -26,22 +26,11 @@ const byte rer = 6;
 //Heart
 int heartpin = 9;
 
-//Lightsensor
-const byte lightsensorpin = A0;
 
 //RGB 
 const byte redpin = 2;
 const byte greenpin = 5;
 const byte bluepin = 0;
-
-//Segment Display
-SevSeg display;
-
-byte numDigits = 4; 
-byte digitPins[] = {27, 29, 31, 33};
-byte segmentPins[] = {6, 53, 52, 51, 50, 49, 48, 35};
-byte resistorsOnSegments = true;
-byte hardwareConfig = COMMON_CATHODE; 
 
 int time; 
 int hours;
@@ -175,7 +164,7 @@ class h{ //for some reason i cant name this class heart
         digitalWrite(heartpin, LOW);
     }
 };
-
+/*
 class lightsensor{
     private:
 
@@ -192,6 +181,9 @@ class lightsensor{
     }
 
 };
+
+*/
+
 
 class rgblight{
     private:
@@ -412,6 +404,7 @@ class servo{
     }
 };
 
+/*
 class segmentdisplay{
     public:
     void setDigits(char* inputdata[20]){ //ONLY 4 DIGITS 05/4digits/1234
@@ -424,13 +417,15 @@ class segmentdisplay{
     }
 };
 
+*/
+
 int run(char* inputdata[20], int returndata = 0, bool returnvalue = false){ //returndata (asa) is optional
     eyes eyes;
     h heart;
     rgblight rgb;
     servo s;
-    lightsensor ls;
-    segmentdisplay sd;
+    //lightsensor ls;
+    //segmentdisplay sd;
 
     char* commandtype = inputdata[0];
     char* prompt = inputdata[1];
@@ -500,8 +495,8 @@ int run(char* inputdata[20], int returndata = 0, bool returnvalue = false){ //re
 void setup(){
     Serial.begin(9600);
 
-    display.begin(hardwareConfig, numDigits, digitPins, segmentPins, resistorsOnSegments);
-    display.setBrightness(90);
+    //display.begin(hardwareConfig, numDigits, digitPins, segmentPins, resistorsOnSegments);
+    //display.setBrightness(90);
 
     //Serial.print(inputdata[0]); Serial.print(" "); Serial.print(inputdata[1]);
 }
@@ -541,7 +536,7 @@ void loop(){
     }   
 
     if (commandrecieved){
-        display.refreshDisplay();
+        //display.refreshDisplay();
         tokenise(rawdata, inputdata); //Data stored as inputdata
 
         run(inputdata, asa);

@@ -3,7 +3,7 @@
 #define INPUT_SIZE 30
 
 //Pins
-int servopin = 3;
+int servopin = 8;
 Servo neck;
 
 //Settings

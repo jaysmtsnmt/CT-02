@@ -1,7 +1,7 @@
 #include <Arduino.h>
 
 int strength = 170;
-int heart = 9;
+int heart = 14;
 int period = 50; //Miliseconds
 
 void beat(int s = strength, int p = period){

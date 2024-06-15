@@ -7,10 +7,10 @@ int blinktime = 200;
 int brightness = 150;
 int sleepbrightness = 30;
 
-int le = 11; 
-int re = 10; 
-int ler = 5;
-int rer = 6;
+int le = 2; 
+int re = 3; 
+int ler = 18;
+int rer = 19;
 
 void blink(int x = blinktime, int b = brightness){ //Pass x as mils closed / Blinktime
     Serial.println("[EXECUTE] Blink");
@@ -133,3 +133,9 @@ void fadeoff(int speed = breathingdelay, int maxbrightness = sleepbrightness) {
     }
 }
 
+void blueoff(){
+    pinMode(le, OUTPUT); //left eye
+    pinMode(re, OUTPUT); //right eye
+    digitalWrite(le, LOW);
+    digitalWrite(re, LOW);
+}
