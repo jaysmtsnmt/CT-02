@@ -6,7 +6,7 @@ int period = 50; //Miliseconds
 
 void beat(int s = strength, int p = period){
   pinMode(heart, OUTPUT);
-  Serial.println("[EXECUTE] Heart Beat");
+  //Serial.println("[EXECUTE] Heart Beat");
 
   analogWrite(heart, s);
   delay(p);

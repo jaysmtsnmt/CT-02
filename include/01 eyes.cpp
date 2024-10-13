@@ -13,7 +13,7 @@ int ler = 18;
 int rer = 19;
 
 void blink(int x = blinktime, int b = brightness){ //Pass x as mils closed / Blinktime
-    Serial.println("[EXECUTE] Blink");
+    //Serial.println("[EXECUTE] Blink");
     pinMode(le, OUTPUT); //left eye
     pinMode(re, OUTPUT); //right eye
     //pinMode(ler, OUTPUT); //left eye red

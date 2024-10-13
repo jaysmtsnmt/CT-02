@@ -15,16 +15,121 @@ int loopnumber; //Log Variable for Loop Number
 int changestate; //Log Variable for Serial Print (during wake & sleep) & for tracking number of sleep/idle cycles
 String state; //String containing the active state
 
+//Face Tracking (Awake)
+int face_x = 0; //Pixel value for face tracking (internal)
+int tracking_speed = 9; //Milliseconds 
+int error_allowance = 2; //Degree (if it is n degrees away from centre)
+
+
+//Serial Communication Identifiers
 const char* statecmdtag = "00";
-char eyescmdtag[] = "01";
-char heartcmdtag[] = "02";
-char rgbcmdtag[] = "03";
-char servocmdtag[] = "04";
+const char* trackingcmdtag = "09";
+const char* neckcmdtag = "03";
+// const char* neckcmdtag_offset = "soffset";
+const char* neckcmdtag_swrite = "sw";
+// const char* neckcmdtag_swriteimmediate = "swi";
+// char eyescmdtag[] = "01";
+// char heartcmdtag[] = "02";
+// char rgbcmdtag[] = "03";
 
 //Settings
 //Servo Settings
 int defaultangle = 98; //when the face is completely facing in front
 int asa = defaultangle; //active servo angle
+
+int charToInt(char *string){
+    int i = 0;
+    int x = 0;
+    int result = 0;
+
+    while (string[i] != NULL){
+        x++;
+        i++;
+    }
+    x = x-1;
+
+    for (int n=x; n >= 0; n = (n-1)){
+        //Serial.println();
+        // Serial.println(string[n]);
+        int number = (int)string[n] - 48;
+        //Serial.println(number);
+        //Serial.println(ceil(pow(10,x-n)));
+        result = result + (number * ceil(pow(10, x-n)));
+        //Serial.println(number*ceil(pow(10,x-n)));
+        //Serial.println(result);
+    }
+
+    return result;
+}
+
+void awake(){
+    unsigned long start_time = 0;
+    unsigned long end_time = 0;
+    start_time = millis();
+    openeyes();
+
+    while (state == "awake"){
+        end_time = millis();
+
+        //Blinking
+        if ((end_time-start_time) > random(2500, 5000)){
+            blink();
+            start_time = millis();
+        }
+
+
+        //Face Tracking
+        char rawdata[20]; //RAWDATA
+        char* inputdata[20]; //processed data   
+
+        while (Serial.available() > 0) { //Check for python data
+            Serial.readStringUntil('\n').toCharArray(rawdata, 20);
+            
+            tokenise(rawdata, inputdata); //raw data is seperated and stored as inputdata
+
+            //Serial.print("\n[FACE] Coordinates Recieved: "); Serial.println(inputdata[1]);
+
+            //Processing pixel data
+            if (strcmp(inputdata[0], trackingcmdtag) == 0){
+                face_x = charToInt(inputdata[1]);
+                //Serial.print("[FACE] Recieved: "); Serial.println(face_x);
+                int servoCorr = round((face_x - 640)/25.6);
+                //Serial.print("[FACE] ServoCorr: "); Serial.println(servoCorr);
+                int finalAngle = (-1*servoCorr)+asa;
+                //Serial.print("[FACE] Adjusting... | ");Serial.print("Destination Angle: "); Serial.println(finalAngle);
+
+                if ((finalAngle <= 180) && (finalAngle >= 0)){
+                    if (abs(servoCorr) > error_allowance){
+                        asa = swrite(asa, finalAngle, tracking_speed);
+                        //asa = swriteimmediate(finalAngle);
+                    }
+                }  
+            }
+            //Serial.flush();  
+            
+            if (strcmp(inputdata[0], statecmdtag) == 0){
+                Serial.print("[STATE] Changing to: "); Serial.println(inputdata[1]);
+                state = inputdata[1];
+                changestate = loopnumber;
+            }
+
+            if (strcmp(inputdata[0], neckcmdtag) == 0){
+                if (strcmp(inputdata[1], neckcmdtag_swrite) == 0){
+                    int ang = charToInt(inputdata[2]);
+                    //int servdelay = charToInt(inputdata[3]);
+                    asa = swrite(asa, ang, 50);
+                }
+            }
+        }   
+        Serial.flush();  
+    }
+    
+    // Serial.println("[TEST]");
+    // asa = swrite(asa, 70, 20);
+    // delay(2000);
+    // asa = swrite(asa, 160, 20);
+    // delay(2000);
+}
 
 //Functions
 void idle(bool fallasleep = true, int fallasleepafter = idletosleep){
@@ -119,12 +224,11 @@ void setup() {
     loopnumber = 1;
 
     Serial.begin(9600);
-    Serial.println("[EVENT] Setup started");
+    Serial.println("[CT-02] Setup started");
 
     //fadeon();
     swriteimmediate(defaultangle);
-
-    Serial.println("[EVENT] Setup finished.");
+    Serial.println("[CT-02] Setup finished.");
 }
 
 void loop(){
@@ -138,14 +242,22 @@ void loop(){
 
     Serial.println("[C++] Checking for Data");
     while (Serial.available() > 0) { //Check for python data
-        Serial.readString().toCharArray(rawdata, 20);
+        Serial.readStringUntil('\n').toCharArray(rawdata, 20);
         Serial.println("[C++] Data Recieved");
         tokenise(rawdata, inputdata); //raw data is seperated and stored as inputdata
-        //Serial.print("[BUG] state "); Serial.println(inputdata[0]);
+
+        if (strcmp(inputdata[0], neckcmdtag) == 0){
+            if (strcmp(inputdata[1], neckcmdtag_swrite) == 0){
+                int ang = charToInt(inputdata[2]);
+                int servdelay = charToInt(inputdata[3]);
+                asa = swrite(asa, ang, servdelay);
+            }
+        }
 
         if (strcmp(inputdata[0], statecmdtag) == 0){
             Serial.print("[STATE] Changing to: "); Serial.println(inputdata[1]);
             state = inputdata[1];
+            changestate = loopnumber;
             //Serial.print("[STATE]="); Serial.println(state);
         }
     }   
@@ -154,7 +266,7 @@ void loop(){
         idle(); 
     }
 
-    if (state == "deepsleep"){
+    else if (state == "deepsleep"){
         //asa = swrite(asa, 98, 50);
         //detatch();
         blueoff(); //off all lights
@@ -163,7 +275,14 @@ void loop(){
 
     }
 
-    if (state == "sleep"){
+    else if (state == "awake"){
+        awake();
+    }
+
+    else { //default to sleep
+        //awake();
         sleep();
     }
+
+
 }

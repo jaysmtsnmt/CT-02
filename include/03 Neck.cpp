@@ -28,7 +28,6 @@ int swriteimmediate(int angle){
 }
 
 int swrite(int asa, int angle, int servodelay){
-    Serial.begin(9600);
     neck.attach(servopin);
 
     Serial.print("[SERVO] Start Angle: ");
@@ -90,7 +89,6 @@ void detatch(){
 }
 
 int randefaultservo(int asa){
-    Serial.begin(9600);
     neck.attach(servopin);
 
     Serial.print("[SERVO] Start Angle: ");
@@ -154,4 +152,3 @@ int randefaultservo(int asa){
     neck.detach();
   
 }
-
