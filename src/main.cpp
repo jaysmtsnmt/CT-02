@@ -17,7 +17,7 @@ String state; //String containing the active state
 
 //Face Tracking (Awake)
 int face_x = 0; //Pixel value for face tracking (internal)
-int tracking_speed = 9; //Milliseconds 
+int tracking_speed = 14; //Milliseconds 
 int error_allowance = 2; //Degree (if it is n degrees away from centre)
 
 
@@ -77,36 +77,30 @@ void awake(){
             start_time = millis();
         }
 
-
         //Face Tracking
         char rawdata[20]; //RAWDATA
         char* inputdata[20]; //processed data   
 
         while (Serial.available() > 0) { //Check for python data
             Serial.readStringUntil('\n').toCharArray(rawdata, 20);
-            
             tokenise(rawdata, inputdata); //raw data is seperated and stored as inputdata
-
-            //Serial.print("\n[FACE] Coordinates Recieved: "); Serial.println(inputdata[1]);
 
             //Processing pixel data
             if (strcmp(inputdata[0], trackingcmdtag) == 0){
                 face_x = charToInt(inputdata[1]);
-                //Serial.print("[FACE] Recieved: "); Serial.println(face_x);
                 int servoCorr = round((face_x - 640)/25.6);
-                //Serial.print("[FACE] ServoCorr: "); Serial.println(servoCorr);
                 int finalAngle = (-1*servoCorr)+asa;
-                //Serial.print("[FACE] Adjusting... | ");Serial.print("Destination Angle: "); Serial.println(finalAngle);
 
                 if ((finalAngle <= 180) && (finalAngle >= 0)){
-                    if (abs(servoCorr) > error_allowance){
-                        asa = swrite(asa, finalAngle, tracking_speed);
-                        //asa = swriteimmediate(finalAngle);
-                    }
+                    // if (abs(servoCorr) > error_allowance){
+                    //     asa = swrite(asa, finalAngle, tracking_speed);
+                    //     //asa = swriteimmediate(finalAngle);
+                    // } #no need for this as there is already processing for pixel correction allowance in python
+
+                    asa = swrite(asa, finalAngle, tracking_speed);
                 }  
             }
-            //Serial.flush();  
-            
+
             if (strcmp(inputdata[0], statecmdtag) == 0){
                 Serial.print("[STATE] Changing to: "); Serial.println(inputdata[1]);
                 state = inputdata[1];
@@ -123,12 +117,6 @@ void awake(){
         }   
         Serial.flush();  
     }
-    
-    // Serial.println("[TEST]");
-    // asa = swrite(asa, 70, 20);
-    // delay(2000);
-    // asa = swrite(asa, 160, 20);
-    // delay(2000);
 }
 
 //Functions
