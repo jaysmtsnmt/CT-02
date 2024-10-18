@@ -7,6 +7,7 @@
 #include "02 Heart.cpp"
 #include "03 Neck.cpp"
 #include "04 DataHandler.cpp"
+#include "05 PhoneBox.cpp"
 
 //Internal Variables/Definitions
 int idletosleep = 10; //Number of idle loops till sleep
@@ -15,27 +16,24 @@ int loopnumber; //Log Variable for Loop Number
 int changestate; //Log Variable for Serial Print (during wake & sleep) & for tracking number of sleep/idle cycles
 String state; //String containing the active state
 
-//Face Tracking (Awake)
-int face_x = 0; //Pixel value for face tracking (internal)
-int tracking_speed = 14; //Milliseconds 
-int error_allowance = 2; //Degree (if it is n degrees away from centre)
-
-
 //Serial Communication Identifiers
 const char* statecmdtag = "00";
 const char* trackingcmdtag = "09";
 const char* neckcmdtag = "03";
+const char* phoneboxcmdtag = "05";
 // const char* neckcmdtag_offset = "soffset";
 const char* neckcmdtag_swrite = "sw";
+const char* phoneboxcmdtag_eject = "eject";
 // const char* neckcmdtag_swriteimmediate = "swi";
-// char eyescmdtag[] = "01";
-// char heartcmdtag[] = "02";
-// char rgbcmdtag[] = "03";
 
 //Settings
 //Servo Settings
 int defaultangle = 98; //when the face is completely facing in front
-int asa = defaultangle; //active servo angle
+int asa = defaultangle; //active servo angle (internal)
+//Face Tracking Settings (Awake)
+int face_x = 0; //Pixel value for face tracking (internal)
+int tracking_speed = 14; //Milliseconds 
+int error_allowance = 2; //Degree (if it is n degrees away from centre)
 
 int charToInt(char *string){
     int i = 0;
@@ -64,19 +62,26 @@ int charToInt(char *string){
 
 void awake(){
     unsigned long start_time = 0;
-    unsigned long end_time = 0;
+    unsigned long currentMillis = 0;
+    unsigned long reset_eject = 0; //time at which phone was last ejected (if = 0, means that phone has not been ejected)
+
     start_time = millis();
     openeyes();
 
     while (state == "awake"){
-        end_time = millis();
+        currentMillis = millis();
 
         //Blinking
-        if ((end_time-start_time) > random(2500, 5000)){
+        if ((currentMillis-start_time) > random(2500, 5000)){
             blink();
             start_time = millis();
         }
 
+        if ((reset_eject != 0) and (currentMillis-reset_eject > 3000)){ //If the phone was ejected, but ejector has not reset, and if it has been 3000 milliseconds, reset the ejector.
+            reset_eject = 0;
+            reset();
+        }
+        
         //Face Tracking
         char rawdata[20]; //RAWDATA
         char* inputdata[20]; //processed data   
@@ -86,7 +91,7 @@ void awake(){
             tokenise(rawdata, inputdata); //raw data is seperated and stored as inputdata
 
             //Processing pixel data
-            if (strcmp(inputdata[0], trackingcmdtag) == 0){
+            if (strcmp(inputdata[0], trackingcmdtag) == 0){ //Detect instruction to track face
                 face_x = charToInt(inputdata[1]);
                 int servoCorr = round((face_x - 640)/25.6);
                 int finalAngle = (-1*servoCorr)+asa;
@@ -101,21 +106,29 @@ void awake(){
                 }  
             }
 
-            if (strcmp(inputdata[0], statecmdtag) == 0){
+            if (strcmp(inputdata[0], statecmdtag) == 0){ //Detect instruction to change state
                 Serial.print("[STATE] Changing to: "); Serial.println(inputdata[1]);
                 state = inputdata[1];
                 changestate = loopnumber;
             }
 
-            if (strcmp(inputdata[0], neckcmdtag) == 0){
+            if (strcmp(inputdata[0], neckcmdtag) == 0){ //Detect instruction to rotate servo
                 if (strcmp(inputdata[1], neckcmdtag_swrite) == 0){
                     int ang = charToInt(inputdata[2]);
                     //int servdelay = charToInt(inputdata[3]);
                     asa = swrite(asa, ang, 50);
                 }
             }
+
+            if (strcmp(inputdata[0], phoneboxcmdtag) == 0){ //Detect instruction to eject phone from box
+                if (strcmp(inputdata[1], phoneboxcmdtag_eject) == 0){
+                    eject();
+                    reset_eject = millis(); //Reset eject becomes non-zero.
+                }
+            }
+
         }   
-        Serial.flush();  
+        Serial.flush();  //Clear serial!!
     }
 }
 
