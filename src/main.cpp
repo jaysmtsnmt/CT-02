@@ -1,20 +1,25 @@
 //Pre-Definitions
 #include <Arduino.h>
 #include <iostream>
+#include <Servo.h>
 
 //Hardware Includes
 #include "01 Eyes.cpp" 
 #include "02 Heart.cpp"
 #include "03 Neck.cpp"
 #include "04 DataHandler.cpp"
-#include "05 PhoneBox.cpp"
 
 //Internal Variables/Definitions
-int idletosleep = 10; //Number of idle loops till sleep
+int idletosleep = 10000; //Number of idle loops till sleep
 int sleeptoidle = 15; //Number of sleep loops till idle
 int loopnumber; //Log Variable for Loop Number
 int changestate; //Log Variable for Serial Print (during wake & sleep) & for tracking number of sleep/idle cycles
 String state; //String containing the active state
+
+//Phone Box
+int ejectorpin = 11;
+int maxangle = 110;
+Servo ejector;
 
 //Serial Communication Identifiers
 const char* statecmdtag = "00";
@@ -64,9 +69,12 @@ void awake(){
     unsigned long start_time = 0;
     unsigned long currentMillis = 0;
     unsigned long reset_eject = 0; //time at which phone was last ejected (if = 0, means that phone has not been ejected)
+    unsigned long start_beat_time = 0;
 
     start_time = millis();
+    start_beat_time = millis();
     openeyes();
+    beat();
 
     while (state == "awake"){
         currentMillis = millis();
@@ -79,7 +87,12 @@ void awake(){
 
         if ((reset_eject != 0) and (currentMillis-reset_eject > 3000)){ //If the phone was ejected, but ejector has not reset, and if it has been 3000 milliseconds, reset the ejector.
             reset_eject = 0;
-            reset();
+            ejector.write(0);
+        }
+
+        if ((currentMillis-start_beat_time) > random(4000, 7000)){
+            beat();
+            start_beat_time = millis();
         }
         
         //Face Tracking
@@ -122,7 +135,10 @@ void awake(){
 
             if (strcmp(inputdata[0], phoneboxcmdtag) == 0){ //Detect instruction to eject phone from box
                 if (strcmp(inputdata[1], phoneboxcmdtag_eject) == 0){
-                    eject();
+                    Serial.println("[PHONE] EJECT");
+                    ejector.attach(ejectorpin);
+                    ejector.write(maxangle);
+
                     reset_eject = millis(); //Reset eject becomes non-zero.
                 }
             }

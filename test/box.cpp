@@ -8,6 +8,8 @@ char data;
 void setup(){
     Serial.begin(9600);
     box.attach(servopin);
+    box.write(0);
+    box.detach();
 }
 
 void loop(){
@@ -16,9 +18,12 @@ void loop(){
         Serial.flush(); 
 
         if (data == 'y'){
+            box.attach(servopin);
             box.write(100);
             delay(2000);
             box.write(0);
+            
+            box.detach();
 
         }
     }
